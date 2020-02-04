@@ -16,10 +16,10 @@ Since the app was developed in Kotlin, some changes have been made to use the an
 kapt.incremental.apt=true
 ```
 - On app gradle file when import android room
-```
-~~annotationProcessor~~ "android.arch.persistence.room:compiler:$room_version"
-kapt "android.arch.persistence.room:compiler:$room_version"
-```
+
+> ~~annotationProcessor~~ "android.arch.persistence.room:compiler:$room_version"
+> kapt "android.arch.persistence.room:compiler:$room_version"
+
 To get more info
 > [Annotation Processor](https://medium.com/@robhor/annotation-processing-for-android-b7eda1a41051)
 > [Kapt](https://kotlinlang.org/docs/reference/kapt.html)
