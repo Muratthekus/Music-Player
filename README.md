@@ -18,6 +18,7 @@ kapt.incremental.apt=true
 - On app gradle file when import android room
 
 > ~~annotationProcessor~~ "android.arch.persistence.room:compiler:$room_version"
+
 > kapt "android.arch.persistence.room:compiler:$room_version"
 
 To get more info
