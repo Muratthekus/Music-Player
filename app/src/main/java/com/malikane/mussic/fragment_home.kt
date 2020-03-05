@@ -25,6 +25,7 @@ class Fragment_Home: Fragment(){
         lateinit var data:SharedPreferences
         lateinit var editor:SharedPreferences.Editor
     }
+
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
