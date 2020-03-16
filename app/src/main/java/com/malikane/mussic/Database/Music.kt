@@ -5,20 +5,10 @@ import androidx.room.ForeignKey
 import androidx.room.ForeignKey.CASCADE
 import androidx.room.PrimaryKey
 
-@Entity(tableName = "music",
-    foreignKeys =
-    [
-        ForeignKey(entity=Artist::class,
-        parentColumns= ["Id"],
-        childColumns = ["artistId"],
-        onDelete =CASCADE)
-
-    ])
+@Entity(tableName = "music")
 data class Music(
     @PrimaryKey(autoGenerate = true)
-    var Id:Int,
-    var artistId:Int,
+    var Id:Int=0,
     var artistName:String,
-    var name:String,
-    var duration:Int)
+    var name:String)
 

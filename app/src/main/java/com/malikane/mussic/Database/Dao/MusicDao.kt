@@ -2,7 +2,6 @@ package com.malikane.mussic.Database.Dao
 
 import androidx.lifecycle.LiveData
 import androidx.room.*
-import com.malikane.mussic.Database.Artist
 import com.malikane.mussic.Database.Music
 
 @Dao
@@ -16,9 +15,14 @@ interface MusicDao {
     @Delete
     fun deleteMusic(music: Music)
 
+    @Query("DELETE FROM music")
+    fun clearTable()
 
-    @Query("SELECT * FROM artist LEFT JOIN music ON artist.Id=music.artistId AND artist.name=music.artistName WHERE music.artistId=:artistId AND music.artistName=:artistName ")
-    fun getArtist(artistId:Int,artistName:String):Artist
+    @Query("SELECT COUNT(Id) FROM music")
+    fun getNumberOfMusic():Int
+
+    @Query("SELECT * FROM music WHERE name LIKE :name ")
+    fun getMusic(name:String):Music
 
     @Query("SELECT * FROM music")
     fun getAllMusic(): LiveData<List<Music>>?

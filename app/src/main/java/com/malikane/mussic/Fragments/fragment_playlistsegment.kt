@@ -1,7 +1,8 @@
-package com.malikane.mussic
+package com.malikane.mussic.Fragments
 
 import android.content.SharedPreferences
 import android.os.Bundle
+import android.os.Environment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -9,6 +10,7 @@ import android.widget.TextView
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModel
 import androidx.recyclerview.widget.RecyclerView
+import com.malikane.mussic.R
 
 class Fragment_PlaylistSegment:Fragment(){
     private lateinit var viewModel:ViewModel
@@ -34,6 +36,6 @@ class Fragment_PlaylistSegment:Fragment(){
 
     override fun onActivityCreated(savedInstanceState: Bundle?) {
         super.onActivityCreated(savedInstanceState)
-        text.text= context?.filesDir.toString()
+        text.text= Environment.getExternalStorageDirectory().path
     }
 }

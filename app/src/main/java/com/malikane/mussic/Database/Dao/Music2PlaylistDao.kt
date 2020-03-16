@@ -8,6 +8,7 @@ import com.malikane.mussic.Database.Music2Playlist
 interface Music2PlaylistDao{
     /*@Query("INSERT INTO music2playlist(musicId,musicName,playlistId,playlistName) VALUES(:musicId,:musicName,:playlistId,:playlistName)")
     fun addSong(musicId:Int,musicName:String,playlistId:Int,playlistName:String)*/
+
     @Insert
     fun addedSong(music2Playlist: Music2Playlist)
     @Update

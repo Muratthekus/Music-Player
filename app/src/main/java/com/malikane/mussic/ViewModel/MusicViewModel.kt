@@ -5,7 +5,6 @@ import android.content.Context
 import androidx.annotation.NonNull
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.LiveData
-import com.malikane.mussic.Database.Artist
 import com.malikane.mussic.Database.Music
 import com.malikane.mussic.ViewModel.Repository.MusicRepository
 
@@ -17,11 +16,20 @@ open class MusicViewModel(@NonNull application: Application) : AndroidViewModel(
 
     fun updateSong(music: Music)=repository.updateSong(music)
 
+    fun getNumberOfMusic():Int{
+        return repository.getNumberOfMusic()
+    }
+
+    fun clearTable():Boolean{
+        return repository.clearTable()
+    }
+
     fun deleteSong(music: Music)=repository.deleteSong(music)
 
-    fun getArtist(music: Music):Artist{
-        return repository.getArtist(music)
+    fun getMusic(name:String):Music{
+        return repository.getMusic(name)
     }
+
     fun getAllMusic():LiveData<List<Music>>?{
         return allMusic
     }
