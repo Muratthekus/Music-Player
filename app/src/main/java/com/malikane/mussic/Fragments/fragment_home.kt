@@ -1,21 +1,20 @@
 package com.malikane.mussic.Fragments
 
 import android.Manifest
+import android.annotation.SuppressLint
 import android.content.*
 import android.content.pm.PackageManager
-import android.os.Bundle
-import android.os.Environment
-import android.os.IBinder
+import android.media.MediaPlayer
+import android.os.*
 import android.preference.PreferenceManager
 import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.Button
-import android.widget.EditText
-import android.widget.Toast
+import android.widget.*
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
+import androidx.core.os.postDelayed
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProviders
@@ -26,32 +25,41 @@ import com.malikane.mussic.Permission.ReadPermision
 import com.malikane.mussic.R
 import com.malikane.mussic.RecylerViewAdapter
 import com.malikane.mussic.Service.AudioPlayerService
+import com.malikane.mussic.State.State
 import com.malikane.mussic.ViewModel.MusicViewModel
 import java.io.File
 import java.util.*
 import kotlin.collections.ArrayList
+import kotlin.properties.Delegates
 
 
 class Fragment_Home: Fragment(),View.OnClickListener,RecylerViewAdapter.OnItemClickListener{
-    private lateinit var viewModel:MusicViewModel
-    var isServiceConnected:Boolean = false
-    private lateinit var shuffle: Button
-	private lateinit var searchBar:EditText
-    private var musics:List<Music> = ArrayList()
-    private var Readpermission = ReadPermision()
 
-    private lateinit var PATH: String
-    private lateinit var serviceConnection: ServiceConnection
+	private lateinit var viewModel:MusicViewModel
+	private lateinit var shuffle: Button
+	private lateinit var searchBar:EditText
+    private lateinit var seekBar: SeekBar
+	private lateinit var mediaPlayerContainer: RelativeLayout
+	private lateinit var play:Button
+
+	private var musics:List<Music> = ArrayList()
+    private var Readpermission = ReadPermision()
+	//To Update Media Player Progress on UI
+	private val handler=Handler()
+	//Thread that will update progress of media player while media player playing a song
+	private var runnable:Runnable=Runnable {updateProgress()}
+
+	//thread that will check player playing a song and boolean to check whether this thread initialized or not
+	private var checkPlayer:Runnable= Runnable {setVisibility()}
+
+
+	lateinit var data:SharedPreferences
+	lateinit var editor:SharedPreferences.Editor
+	private lateinit var PATH: String
     private lateinit var recyclerview: RecyclerView
     private lateinit var adapter: RecylerViewAdapter
-    lateinit var player:AudioPlayerService
-    //static objects
-    companion object Statics{
-        lateinit var data:SharedPreferences
-        lateinit var editor:SharedPreferences.Editor
-    }
 
-    override fun onCreateView(
+	override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
         savedInstanceState: Bundle?
@@ -65,35 +73,40 @@ class Fragment_Home: Fragment(),View.OnClickListener,RecylerViewAdapter.OnItemCl
 		//
         shuffle=v.findViewById(R.id.shuffle)
 		shuffle.setOnClickListener(this)
+		//
+		//
+		mediaPlayerContainer=v.findViewById(R.id.mediaplayer_container)
+		mediaPlayerContainer.visibility=View.GONE
+		//
+		seekBar=v.findViewById(R.id.player_progress)
+
+		play=v.findViewById(R.id.play)
+		play.setOnClickListener(this)
+
 		//define shared preference
-		data = PreferenceManager.getDefaultSharedPreferences(activity?.applicationContext)
-		editor = data.edit()
+
         return v
     }
 
-    override fun onActivityCreated(savedInstanceState: Bundle?) {
+	override fun onActivityCreated(savedInstanceState: Bundle?) {
         super.onActivityCreated(savedInstanceState)
-
-		data =PreferenceManager.getDefaultSharedPreferences(activity?.application?.applicationContext)
-		editor = data.edit()
-
         viewModel=ViewModelProviders.of(this).get(MusicViewModel::class.java)
         //define recycler view adapter
         adapter= RecylerViewAdapter()
         recyclerview.adapter=adapter
         adapter.SetOnItemClickListener(this)
 		PATH = Environment.getExternalStorageDirectory().path+"/Download/"
-
-		//Check Permission
+		//User already connect with service, these functions already used
 		Readpermission.readFile(activity)
-
 		serviceConnection()
 		//Check data change or not
+		saveMusicInToMusicTable()
 		CheckData().run()
-
-
-        saveMusicInToMusicTable()
-
+		if(State.IS_MEDIA_PLAYER_PLAYED_SONG){
+			mediaPlayerContainer.visibility=View.VISIBLE
+			if(State.PLAYER!=null)
+				setVisibility()
+		}
 	}
 
 	//RecyclerView Item Click Listener
@@ -109,12 +122,23 @@ class Fragment_Home: Fragment(),View.OnClickListener,RecylerViewAdapter.OnItemCl
                 Toast.makeText(activity!!.applicationContext,"Operation $flag",Toast.LENGTH_LONG).show()
 				Log.d("MUSIC NUMBER -1","${viewModel.getNumberOfMusic()}")
 			}
+			R.id.play->{
+				if(State.PLAYER!!.player.isPlaying){
+					State.PLAYER!!.pauseSong()
+					play.setBackgroundResource(R.drawable.play_button)
+				}
+				else{
+					if(State.PLAYER!!.player.duration==State.PLAYER!!.player.currentPosition)
+						startPlay(PATH)
+					else
+						State.PLAYER!!.resumeSong()
+				}
+			}
         }
-
     }
 
 	private fun serviceConnection(){
-		serviceConnection = object :
+		State.SERVICE_CONNECTION = object :
 			ServiceConnection {
 
 			override fun onServiceDisconnected(name: ComponentName?) {
@@ -127,26 +151,59 @@ class Fragment_Home: Fragment(),View.OnClickListener,RecylerViewAdapter.OnItemCl
 			) {
 				val binder: AudioPlayerService.LocalBinder =
 					service as AudioPlayerService.LocalBinder
-				player = binder.getService()
-				isServiceConnected=true
+				State.PLAYER = binder.getService()
 				Log.v("Service Connection","Service were bound")
+				State.IS_SERVICE_CONNECTED=true
+				setVisibility()
 			}
 
 		}
 	}
 
     private fun startPlay(PATH:String){
-		if(!isServiceConnected){
+		if(!State.IS_SERVICE_CONNECTED){
 			val intent=Intent(activity,AudioPlayerService::class.java)
 			intent.putExtra("PATH",PATH)
-			activity!!.bindService(intent,serviceConnection,Context.BIND_AUTO_CREATE)
+			activity!!.bindService(intent,State.SERVICE_CONNECTION!!,Context.BIND_AUTO_CREATE)
+			//
 		}
 		//Service working
 		else{
-			player.changePath(PATH)
+			//handler.removeCallbacks(runnable)
+			State.PLAYER!!.changePath(PATH)
+			setVisibility()
+			//handler.postDelayed(runnable,100)
 		}
 
     }
+
+	private fun setVisibility(){
+		if(State.PLAYER!!.player.isPlaying){
+			//save true to static member of state class
+			State.IS_MEDIA_PLAYER_PLAYED_SONG=true
+			mediaPlayerContainer.visibility=View.VISIBLE
+			play.setBackgroundResource(R.drawable.pause_black)
+			seekBar.max=State.PLAYER!!.player.duration
+			seekBar.progress=0
+			if(State.IS_INITIALIZED)
+				handler.removeCallbacks(checkPlayer)//player now start to play, we don't need to check
+			updateProgress()
+		}
+		else{
+			play.setBackgroundResource(R.drawable.play_button)
+			State.IS_INITIALIZED=true
+			//function will call itself until player start to play
+			handler.postDelayed(checkPlayer,100)
+		}
+
+	}
+
+	private fun updateProgress(){
+		seekBar.progress=State.PLAYER!!.player.currentPosition
+		if(State.PLAYER!!.player.isPlaying){
+			handler.postDelayed(runnable,100)
+		}
+	}
 
     private fun saveMusicInToMusicTable(){
         /**
@@ -184,23 +241,25 @@ class Fragment_Home: Fragment(),View.OnClickListener,RecylerViewAdapter.OnItemCl
         return null
     }
 
-    override fun onDestroy() {
-        super.onDestroy()
-        if(isServiceConnected){
-            activity!!.unbindService(serviceConnection)
-            player.stopSelf()
-        }
-    }
-
 	inner class CheckData():Runnable{
 		override fun run() {
 			viewModel.getAllMusic()!!.observe(this@Fragment_Home, Observer {
 				adapter.setMusicList(it)
-				searchBar.setText(adapter.itemCount.toString())
 			})
-
 		}
 	}
+
+	override fun onDestroy() {
+		super.onDestroy()
+		if(State.IS_SERVICE_CONNECTED) {
+			//State.IS_SERVICE_CONNECTED=false
+			//activity!!.unbindService(serviceConnection)
+			handler.removeCallbacks(runnable)
+			//player.stopSelf()
+		}
+
+	}
+
 
 
 }

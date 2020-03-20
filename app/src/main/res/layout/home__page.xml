@@ -1,48 +1,94 @@
 <?xml version="1.0" encoding="utf-8"?>
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/wrap_content"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     xmlns:tools="http://schemas.android.com/tools"
     android:background="@color/appBackground">
 
-    <androidx.appcompat.widget.AppCompatEditText
-        android:layout_width="308dp"
-        android:layout_height="34dp"
-        android:layout_alignParentLeft="true"
-        android:layout_alignParentTop="true"
-        android:layout_marginLeft="14dp"
-        android:layout_marginTop="15dp"
-        android:background="@drawable/searchbar"
-        android:clickable="true"
-        android:focusable="true"
-        android:focusableInTouchMode="true"
-        android:paddingLeft="5dp" />
-
     <RelativeLayout
+        android:id="@+id/container"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_alignParentStart="true"
-        android:layout_alignParentTop="true"
-        android:layout_alignParentEnd="true"
-        android:layout_centerHorizontal="true"
-        android:layout_marginStart="4dp"
-        android:layout_marginTop="86dp"
-        android:layout_marginEnd="7dp">
+        android:layout_height="202dp">
+        <EditText
+            android:inputType="text"
+            android:id="@+id/searchBar"
+            android:hint="search"
+            android:layout_width="308dp"
+            android:layout_height="34dp"
+            android:layout_alignParentStart="true"
+            android:layout_alignParentTop="true"
+            android:layout_marginStart="14dp"
+            android:layout_marginTop="15dp"
+            android:background="@drawable/searchbar"
+            android:focusableInTouchMode="true"
+            android:paddingStart="5dp" />
 
-        <Button
-            android:layout_width="156dp"
-            android:layout_height="50dp"
-            android:layout_centerInParent="true"
-            android:background="@drawable/shufflebutton"
-            android:fontFamily="@font/reem_kufi"
-            android:text="@string/shuffle" />
+        <RelativeLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_alignParentStart="true"
+            android:layout_alignParentTop="true"
+            android:layout_alignParentEnd="true"
+            android:layout_centerHorizontal="true"
+            android:layout_marginStart="4dp"
+            android:layout_marginTop="86dp"
+            android:layout_marginEnd="7dp">
+
+            <Button
+                android:id="@+id/shuffle"
+                android:layout_width="156dp"
+                android:layout_height="50dp"
+                android:layout_centerInParent="true"
+                android:background="@drawable/shufflebutton"
+                android:fontFamily="@font/reem_kufi"
+                android:text="@string/shuffle" />
+        </RelativeLayout>
     </RelativeLayout>
 
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/recylerView"
         android:layout_width="match_parent"
-        android:layout_height="529dp"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/container"
         android:layout_alignParentStart="true"
+        android:layout_marginStart="0dp"
+        android:layout_marginTop="0dp"
+        tools:listitem="@layout/music_recylerview"
+        android:layout_above="@id/mediaplayer_container"/>
+    <RelativeLayout
+        android:id="@+id/mediaplayer_container"
+        android:layout_width="match_parent"
+        android:layout_height="68dp"
+        android:layout_gravity="bottom"
         android:layout_alignParentBottom="true"
-        tools:listitem="@layout/music_recylerview" />
+        android:layout_marginBottom="2dp">
+        <SeekBar
+            android:id="@+id/player_progress"
+            android:layout_width="match_parent"
+            android:layout_height="2dp"
+            android:layout_alignParentStart="true"
+            android:clickable="false" />
+
+        <Button
+            android:id="@+id/play"
+            android:layout_width="39dp"
+            android:layout_height="wrap_content"
+            android:layout_alignParentStart="true"
+            android:layout_alignParentEnd="true"
+            android:layout_marginStart="184dp"
+            android:layout_marginTop="12dp"
+            android:visibility="visible"
+            android:layout_marginEnd="187dp"
+            android:layout_marginBottom="8dp"
+            android:background="@drawable/play_button" />
+
+        <RelativeLayout
+            android:background="@color/white"
+            android:layout_width="match_parent"
+            android:layout_height="2dp"
+            android:layout_gravity="bottom"
+            android:layout_alignParentBottom="true"/>
+    </RelativeLayout>
+
 </RelativeLayout>

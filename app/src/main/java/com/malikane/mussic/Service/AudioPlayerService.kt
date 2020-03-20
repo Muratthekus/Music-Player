@@ -25,6 +25,7 @@ class AudioPlayerService:Service(),
 	var PATH:String?=""
 	private val iBinder:IBinder=LocalBinder()
 
+
 	override fun onBind(intent: Intent?): IBinder? {
 		PATH= intent?.extras?.getString("PATH",PATH)
 		if(!getAudioFocus()){
@@ -40,31 +41,27 @@ class AudioPlayerService:Service(),
 			return this@AudioPlayerService
 		}
 	}
+
 	private fun playSong(){
-		if(!player.isPlaying){
-			player.prepare()
-		}
-		else{
+		if(player.isPlaying)
 			stopSong()
-			Log.d("PLAYER ERROR",PATH)
-			player.reset()
-			player.setDataSource(PATH)
-			player.prepare()
-		}
+		player.reset()
+		player.setDataSource(PATH)
+		player.prepare()
 	}
 	private fun stopSong(){
 		if(player.isPlaying)
 			player.stop()
 	}
-	private fun pauseSong(){
+	fun pauseSong(){
 		if(player.isPlaying)
 			player.pause()
 		currPos=player.currentPosition
 	}
-	private fun resumeSong(){
+	fun resumeSong(){
 		if(!player.isPlaying){
 			player.seekTo(currPos)
-			player.start()
+			//player.start()
 		}
 	}
 	fun changePath(PATH: String?){
@@ -82,7 +79,6 @@ class AudioPlayerService:Service(),
 		player.setOnPreparedListener(this)
 		player.setOnSeekCompleteListener(this)
 		player.setOnErrorListener(this)
-		//player.start()
 	}
 
 	override fun onError(mp: MediaPlayer?, what: Int, extra: Int): Boolean {
@@ -106,7 +102,7 @@ class AudioPlayerService:Service(),
 		return false
 	}
 
-	override fun onSeekComplete(mp: MediaPlayer?) = resumeSong()
+	override fun onSeekComplete(mp: MediaPlayer?) = player.start()
 
 	override fun onPrepared(mp: MediaPlayer?)=player.start()
 

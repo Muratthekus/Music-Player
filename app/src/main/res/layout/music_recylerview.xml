@@ -1,9 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
 <androidx.cardview.widget.CardView xmlns:android="http://schemas.android.com/apk/res/android"
     android:orientation="vertical" android:layout_width="match_parent"
-    android:layout_height="match_parent">
+    android:layout_height="wrap_content">
 
     <RelativeLayout
+        android:id="@+id/wrapper"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:padding="12dp"
@@ -15,8 +16,11 @@
             android:layout_height="wrap_content"
             android:layout_alignParentStart="true"
             android:fontFamily="@font/reem_kufi"
+            android:maxLength="25"
+            android:maxWidth="310dp"
             android:text="The Song Name"
-            android:textAppearance="@style/Base.TextAppearance.AppCompat.Large"
+            android:textSize="20dp"
+            android:ellipsize="end"
             android:textColor="@color/appTextColor" />
 
         <TextView
@@ -46,38 +50,6 @@
             android:text="Name of the artist"
             />
 
-        <TextView
-            android:id="@+id/genre"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_alignParentTop="true"
-            android:layout_alignParentEnd="true"
-            android:layout_marginTop="10dp"
-            android:layout_marginEnd="120dp"
-            android:text="Genre"
-            android:textSize="20dp"
-            android:textColor="@color/appTextColor" />
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_alignParentTop="true"
-            android:layout_alignParentEnd="true"
-            android:layout_marginTop="9dp"
-            android:layout_marginEnd="111dp"
-            android:text="|"
-            android:textAppearance="@style/Base.TextAppearance.AppCompat.Large"
-            android:textColor="@color/appTextColor" />
-        <TextView
-            android:id="@+id/duration"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_alignParentTop="true"
-            android:layout_alignParentEnd="true"
-            android:layout_marginTop="13dp"
-            android:layout_marginEnd="78dp"
-            android:text="2:46"
-            android:textColor="@color/appTextColor"
-            android:textSize="15dp" />
 
         <Button
             android:layout_width="58dp"
