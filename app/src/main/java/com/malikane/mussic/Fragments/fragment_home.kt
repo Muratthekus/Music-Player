@@ -42,7 +42,6 @@ class Fragment_Home: Fragment(),View.OnClickListener,RecylerViewAdapter.OnItemCl
 	private lateinit var mediaPlayerContainer: RelativeLayout
 	private lateinit var play:Button
 
-	private var musics:List<Music> = ArrayList()
     private var Readpermission = ReadPermision()
 	//To Update Media Player Progress on UI
 	private val handler=Handler()
@@ -52,9 +51,6 @@ class Fragment_Home: Fragment(),View.OnClickListener,RecylerViewAdapter.OnItemCl
 	//thread that will check player playing a song and boolean to check whether this thread initialized or not
 	private var checkPlayer:Runnable= Runnable {setVisibility()}
 
-
-	lateinit var data:SharedPreferences
-	lateinit var editor:SharedPreferences.Editor
 	private lateinit var PATH: String
     private lateinit var recyclerview: RecyclerView
     private lateinit var adapter: RecylerViewAdapter
@@ -252,10 +248,7 @@ class Fragment_Home: Fragment(),View.OnClickListener,RecylerViewAdapter.OnItemCl
 	override fun onDestroy() {
 		super.onDestroy()
 		if(State.IS_SERVICE_CONNECTED) {
-			//State.IS_SERVICE_CONNECTED=false
-			//activity!!.unbindService(serviceConnection)
 			handler.removeCallbacks(runnable)
-			//player.stopSelf()
 		}
 
 	}
