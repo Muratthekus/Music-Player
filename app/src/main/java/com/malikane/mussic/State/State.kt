@@ -1,5 +1,6 @@
 package com.malikane.mussic.State
 
+import android.app.Activity
 import android.content.ServiceConnection
 import com.malikane.mussic.Service.AudioPlayerService
 
@@ -17,5 +18,6 @@ class State() {
 		var IS_INITIALIZED =false
 		var PLAYER:AudioPlayerService?=null
 		var SERVICE_CONNECTION:ServiceConnection?=null
+		var ACTIVITY:Activity?=null
 	}
 }

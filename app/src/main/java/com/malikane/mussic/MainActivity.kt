@@ -24,7 +24,6 @@ class MainActivity : AppCompatActivity() {
         val bottomBar:SmoothBottomBar=findViewById(R.id.bottomBar)
         fragment = Fragment_Home()
         supportFragmentManager.beginTransaction().replace(R.id.framelayout,fragment).commit()
-
         bottomBar.setOnItemSelectedListener(object:OnItemSelectedListener{
             override fun onItemSelect(pos: Int) {
                 if(pos==0){

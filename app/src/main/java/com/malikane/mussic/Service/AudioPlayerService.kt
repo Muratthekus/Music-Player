@@ -1,28 +1,22 @@
 package com.malikane.mussic.Service
 
 import android.app.Activity
+import android.app.NotificationManager
 import android.app.Service
-import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
-import android.content.IntentFilter
 import android.media.AudioAttributes
 import android.media.AudioManager
 import android.media.MediaPlayer
 import android.net.Uri
 import android.os.IBinder
 import android.os.Binder
-import android.provider.MediaStore
+import android.os.Environment
 import android.util.Log
-import android.widget.Button
-import androidx.core.app.NotificationCompat
-import com.malikane.mussic.Database.Music
-import com.malikane.mussic.Enum.PlayerAction
 import com.malikane.mussic.Enum.PlayerStatus
-import com.malikane.mussic.MainActivity
-import com.malikane.mussic.Notificaiton.Notification
-import com.malikane.mussic.R
-import java.util.*
+import com.malikane.mussic.Notification.Notification
+import com.malikane.mussic.State.State
+
 class AudioPlayerService:Service(),
 	MediaPlayer.OnErrorListener,
 	MediaPlayer.OnPreparedListener,
@@ -34,17 +28,20 @@ class AudioPlayerService:Service(),
 	lateinit var player:MediaPlayer
 
 	private var currPos:Int=0
-	private var PATH:String?=""
+	private var PATH:String = Environment.getExternalStorageDirectory().path+"/Download/"
+	private var absPATH:String?="" //PATH+songName+`.mp3`
 	private var songName:String?=""
+	var activity:Activity?=null
+
 
 	private val iBinder:IBinder=LocalBinder()
 	//notification class instance
-	private var notification: Notification = Notification(activity = Activity())
+	private lateinit var notification: Notification
 
 	override fun onCreate() {
 		super.onCreate()
-		PlayerBroadCastReceiver().registerBecomingNoisy()
-		PlayerBroadCastReceiver().registerPlayAudio()
+		//PlayerBroadCastReceiver().registerBecomingNoisy()
+		//PlayerBroadCastReceiver().registerPlayAudio()
 	}
 
 	override fun onDestroy() {
@@ -54,18 +51,19 @@ class AudioPlayerService:Service(),
 			player.release()
 		}
 		notification.deleteNotification()
-		PlayerBroadCastReceiver().unRegisterBecomingNoisy()
-		PlayerBroadCastReceiver().unRegisterPlayAudio()
+		//PlayerBroadCastReceiver().unRegisterBecomingNoisy()
+		//PlayerBroadCastReceiver().unRegisterPlayAudio()
 	}
 
 	override fun onBind(intent: Intent?): IBinder? {
-		PATH= intent?.extras?.getString("PATH",PATH)
+		songName= intent?.extras?.getString("NAME")
 		if(!getAudioFocus()){
 			Log.d("Media Player Error","CAN NOT GET AUDIO FOCUS")
 			stopSelf()
 		}
-		if(PATH!="")
-			initAudioPlayer(PATH)
+		absPATH= "$PATH$songName.mp3"
+		if(absPATH!="")
+			initAudioPlayer(absPATH)
 		return iBinder
 	}
 	inner class LocalBinder:Binder(){
@@ -78,31 +76,38 @@ class AudioPlayerService:Service(),
 		if(player.isPlaying)
 			stopSong()
 		player.reset()
-		initAudioPlayer(PATH)
+		initAudioPlayer(absPATH)
 	}
 	private fun stopSong(){
-		if(player.isPlaying)
+		if(player.isPlaying){
 			player.stop()
+			notification.buildNotification(songName!!,PlayerStatus.STOP)
+		}
 	}
 	fun pauseSong(){
 		if(player.isPlaying)
 			player.pause()
 		currPos=player.currentPosition
+		notification.buildNotification(songName!!,PlayerStatus.STOP)
 	}
 	fun resumeSong(){
 		if(!player.isPlaying){
 			player.seekTo(currPos)
-			//player.start()
+		}
+		else{
+			pauseSong()
+			player.seekTo(currPos)
 		}
 	}
-	fun changePath(PATH: String?){
-		this.PATH=PATH
+	fun changePath(name: String?){
+		this.songName=name
+		absPATH="$PATH$songName.mp3"
 		playSong()
 	}
 
 	// Media Player Methods Begin
-	private fun initAudioPlayer(PATH:String?){
-		player = MediaPlayer.create(applicationContext, Uri.parse(PATH))
+	private fun initAudioPlayer(absPATH:String?){
+		player = MediaPlayer.create(applicationContext, Uri.parse(absPATH))
 		player.setAudioAttributes(AudioAttributes.Builder()
 			.setUsage(AudioAttributes.USAGE_MEDIA)
 			.setContentType(AudioAttributes.CONTENT_TYPE_MUSIC).build())
@@ -133,71 +138,76 @@ class AudioPlayerService:Service(),
 		return false
 	}
 
-	override fun onSeekComplete(mp: MediaPlayer?) = player.start()
-
-	override fun onPrepared(mp: MediaPlayer?)=player.start()
-
+	override fun onSeekComplete(mp: MediaPlayer?) {
+		player.start()
+		notification.buildNotification(songName!!,PlayerStatus.PLAYING)
+	}
+	override fun onPrepared(mp: MediaPlayer?){
+		player.start()
+		notification=Notification(State.ACTIVITY!!, notificationManager = getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager)
+		notification.buildNotification(songName!!,PlayerStatus.PLAYING)
+	}
 	override fun onCompletion(mp: MediaPlayer?){
 		stopSong()
 	}
 	private fun getAudioFocus():Boolean{
-		val audioManager:AudioManager=getSystemService(Context.AUDIO_SERVICE) as AudioManager
-		val request:Int=audioManager.requestAudioFocus(this,AudioManager.STREAM_MUSIC,AudioManager.AUDIOFOCUS_GAIN)
-		return request==AudioManager.AUDIOFOCUS_REQUEST_GRANTED
-	}
+			val audioManager:AudioManager=getSystemService(Context.AUDIO_SERVICE) as AudioManager
+			val request:Int=audioManager.requestAudioFocus(this,AudioManager.STREAM_MUSIC,AudioManager.AUDIOFOCUS_GAIN)
+			return request==AudioManager.AUDIOFOCUS_REQUEST_GRANTED
+		}
 
 	override fun onAudioFocusChange(focusChange: Int) {
-		when(focusChange){
-			AudioManager.AUDIOFOCUS_GAIN->{
-				playSong()
-				player.setVolume(1.0f,1.0f)
-			}
-			AudioManager.AUDIOFOCUS_LOSS->{
-				stopSong()
-				player.release()
-			}
-			AudioManager.AUDIOFOCUS_LOSS_TRANSIENT->pauseSong()
+			when(focusChange){
+				AudioManager.AUDIOFOCUS_GAIN->{
+					playSong()
+					player.setVolume(1.0f,1.0f)
+				}
+				AudioManager.AUDIOFOCUS_LOSS->{
+					stopSong()
+					player.release()
+				}
+				AudioManager.AUDIOFOCUS_LOSS_TRANSIENT->pauseSong()
 
-			AudioManager.AUDIOFOCUS_LOSS_TRANSIENT_CAN_DUCK->player.setVolume(0.3f,0.3f)
+				AudioManager.AUDIOFOCUS_LOSS_TRANSIENT_CAN_DUCK->player.setVolume(0.3f,0.3f)
+			}
 		}
-	}
 	//Media Player Methods End
 
-	inner class PlayerBroadCastReceiver(){
-		//Audio output were changes, player has to be stop
-		private val becomingNoisy=object: BroadcastReceiver(){
-			override fun onReceive(context: Context?, intent: Intent?) {
-				pauseSong()
-				notification.buildNotification(songName!!,PlayerStatus.STOP)
+	/*inner class PlayerBroadCastReceiver(){
+			//Audio output were changes, player has to be stop
+			private val becomingNoisy=object: BroadcastReceiver(){
+				override fun onReceive(context: Context?, intent: Intent?) {
+					pauseSong()
+					notification.buildNotification(songName!!,PlayerStatus.STOP)
+				}
 			}
-		}
-		//
-		fun registerBecomingNoisy(){
-			val intentFilter = IntentFilter(AudioManager.ACTION_AUDIO_BECOMING_NOISY)
-			registerReceiver(becomingNoisy,intentFilter)
-		}
-		//-----------------------------------------------------------------------
-		val playAudio = object : BroadcastReceiver(){
-			override fun onReceive(context: Context?, intent: Intent?) {
-				playSong()
-				notification.buildNotification(songName!!,PlayerStatus.PLAYING)
+			//
+			fun registerBecomingNoisy(){
+				val intentFilter = IntentFilter(AudioManager.ACTION_AUDIO_BECOMING_NOISY)
+				registerReceiver(becomingNoisy,intentFilter)
 			}
-		}
-		fun registerPlayAudio(){
-			val intentFilter=IntentFilter(PlayerAction.ACTION_PLAY_NEW.action)
-			registerReceiver(playAudio,intentFilter)
-		}
+			//-----------------------------------------------------------------------
+			val playAudio = object : BroadcastReceiver(){
+				override fun onReceive(context: Context?, intent: Intent?) {
+					playSong()
+					notification.buildNotification(songName!!,PlayerStatus.PLAYING)
+				}
+			}
+			fun registerPlayAudio(){
+				val intentFilter=IntentFilter(PlayerAction.ACTION_PLAY_NEW.action)
+				registerReceiver(playAudio,intentFilter)
+			}
 
-		//service gonna die, we have to remove broadcast receiver connection
-		fun unRegisterBecomingNoisy(){
-			unregisterReceiver(becomingNoisy)
-		}
-		fun unRegisterPlayAudio(){
-			unregisterReceiver(playAudio)
-		}
+			//service gonna die, we have to remove broadcast receiver connection
+			fun unRegisterBecomingNoisy(){
+				unregisterReceiver(becomingNoisy)
+			}
+			fun unRegisterPlayAudio(){
+				unregisterReceiver(playAudio)
+			}
 
-	}
-
+		}
+	}*/
 
 }
 

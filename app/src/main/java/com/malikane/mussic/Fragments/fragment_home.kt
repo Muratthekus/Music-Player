@@ -21,10 +21,12 @@ import androidx.lifecycle.ViewModelProviders
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.malikane.mussic.Database.Music
+import com.malikane.mussic.Enum.PlayerAction
 import com.malikane.mussic.Permission.ReadPermision
 import com.malikane.mussic.R
 import com.malikane.mussic.RecylerViewAdapter
 import com.malikane.mussic.Service.AudioPlayerService
+import com.malikane.mussic.Service.PlayerBroadCastReceiver
 import com.malikane.mussic.State.State
 import com.malikane.mussic.ViewModel.MusicViewModel
 import java.io.File
@@ -51,7 +53,6 @@ class Fragment_Home: Fragment(),View.OnClickListener,RecylerViewAdapter.OnItemCl
 	//thread that will check player playing a song and boolean to check whether this thread initialized or not
 	private var checkPlayer:Runnable= Runnable {setVisibility()}
 
-	private lateinit var PATH: String
     private lateinit var recyclerview: RecyclerView
     private lateinit var adapter: RecylerViewAdapter
 
@@ -91,13 +92,18 @@ class Fragment_Home: Fragment(),View.OnClickListener,RecylerViewAdapter.OnItemCl
         adapter= RecylerViewAdapter()
         recyclerview.adapter=adapter
         adapter.SetOnItemClickListener(this)
-		PATH = Environment.getExternalStorageDirectory().path+"/Download/"
 		//User already connect with service, these functions already used
 		Readpermission.readFile(activity)
 		serviceConnection()
 		//Check data change or not
 		saveMusicInToMusicTable()
 		CheckData().run()
+		/**
+		 * User opened a song on player and change the fragment
+		 * then come back to this fragment again, media player played a song.
+		 * If media player still playing a song media player has to be visible and
+		 * current progress has to be shown
+		 * */
 		if(State.IS_MEDIA_PLAYER_PLAYED_SONG){
 			mediaPlayerContainer.visibility=View.VISIBLE
 			if(State.PLAYER!=null)
@@ -107,8 +113,7 @@ class Fragment_Home: Fragment(),View.OnClickListener,RecylerViewAdapter.OnItemCl
 
 	//RecyclerView Item Click Listener
 	override fun OnItemClick(music: Music) {
-		val absPath=PATH+music.name+".mp3"
-		startPlay(absPath)
+		startPlay(music.name)
 	}
 
 	override fun onClick(v: View?) {
@@ -125,7 +130,7 @@ class Fragment_Home: Fragment(),View.OnClickListener,RecylerViewAdapter.OnItemCl
 				}
 				else{
 					if(State.PLAYER!!.player.duration==State.PLAYER!!.player.currentPosition)
-						startPlay(PATH)
+						//startPlay(PATH)
 					else
 						State.PLAYER!!.resumeSong()
 				}
@@ -156,17 +161,21 @@ class Fragment_Home: Fragment(),View.OnClickListener,RecylerViewAdapter.OnItemCl
 		}
 	}
 
-    private fun startPlay(PATH:String){
+    private fun startPlay(name:String){
 		if(!State.IS_SERVICE_CONNECTED){
+			State.ACTIVITY=activity
 			val intent=Intent(activity,AudioPlayerService::class.java)
-			intent.putExtra("PATH",PATH)
+			intent.putExtra("NAME",name)
 			activity!!.bindService(intent,State.SERVICE_CONNECTION!!,Context.BIND_AUTO_CREATE)
 			//
 		}
 		//Service working
 		else{
 			//handler.removeCallbacks(runnable)
-			State.PLAYER!!.changePath(PATH)
+			val intent=Intent(activity!!.applicationContext,PlayerBroadCastReceiver::class.java)
+			intent.action=PlayerAction.ACTION_PLAY_NEW.action
+			intent.putExtra("NAME",name)
+			State.PLAYER!!.changePath(name)
 			setVisibility()
 			//handler.postDelayed(runnable,100)
 		}
@@ -188,12 +197,16 @@ class Fragment_Home: Fragment(),View.OnClickListener,RecylerViewAdapter.OnItemCl
 		else{
 			play.setBackgroundResource(R.drawable.play_button)
 			State.IS_INITIALIZED=true
-			//function will call itself until player start to play
+			/**
+			 * When we changes the song, media player needs a time to be prepare
+			 * At this time media player can not play song. Program should check the media player
+			 * finish its preparation and start the play new song
+			 * */
 			handler.postDelayed(checkPlayer,100)
 		}
 
 	}
-
+	//Update progress of media player
 	private fun updateProgress(){
 		seekBar.progress=State.PLAYER!!.player.currentPosition
 		if(State.PLAYER!!.player.isPlaying){
@@ -206,7 +219,6 @@ class Fragment_Home: Fragment(),View.OnClickListener,RecylerViewAdapter.OnItemCl
          * There is no entity in music table, fetch music from file
          * and save it into music table
          * */
-		//There is no item in adapter, fetch musics
 
 		if(viewModel.getNumberOfMusic()==0){
 			val path=Environment.getExternalStorageDirectory().path+"/Download/"
