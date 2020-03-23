@@ -8,6 +8,7 @@ Mussic can play the songs that are on your device or songs on youtube
 - [x] Music Player was added
 - [ ] Play songs on youtube was successfully done
 - [ ] Songs on youtube successfully were played on background
+- [ ] Playlist create/delete/add music to playlist
 
 ## Getting Started
 Since the app was developed in Kotlin, some changes have been made to use the android library
