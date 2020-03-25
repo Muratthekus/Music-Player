@@ -4,6 +4,12 @@
 Mussic is a music player app built on MVVM android architecture.
 Mussic can play the songs that are on your device or songs on youtube
 
+### Screens
+![main screen](https://user-images.githubusercontent.com/45212967/77563770-c2496980-6ed2-11ea-91d2-edcc39094c9b.jpg)
+![notification](https://user-images.githubusercontent.com/45212967/77563948-05a3d800-6ed3-11ea-8aa4-89d16e69daee.jpg)
+![share bottom sheet dialog](https://user-images.githubusercontent.com/45212967/77563986-16544e00-6ed3-11ea-8160-cbde46728856.jpg)
+![share music](https://user-images.githubusercontent.com/45212967/77564019-253b0080-6ed3-11ea-8980-c341959fda2b.jpg)
+
 - [x] Database were built
 - [x] Android service was added
 - [x] Music player was added
