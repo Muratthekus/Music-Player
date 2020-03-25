@@ -30,39 +30,10 @@ To get more info
 > [Annotation Processor](https://medium.com/@robhor/annotation-processing-for-android-b7eda1a41051)
 > [Kapt](https://kotlinlang.org/docs/reference/kapt.html)
 
-#### Mussic flow chart
-```mermaid
-graph LR
-
-Activity[ Main Activity ] -- Activity Start </br> Inflate fragment home -->FragmentHome[Fragment Home]
-FragmentHome -- Fetch musics --> Database
-
-
-FragmentHome -- set adapter music list --> RecylerviewAdapter(Recyler View Adapter)
-
-RecylerviewAdapter -- Send clicked tem --> FragmentHome
-
-FragmentHome -- User trigger an action **Play/Pause/Resume** </br> Connect with service --> Service1(Service)
-
-Service2(Service) -- Build notification </br> & </br> Send player state --> Notification1(Notification)
-
-Notification1 -- Connect with Broadcast Receiver --> BroadCastReceiver1(Broadcast Receiver)
-
-BroadCastReceiver1 -- User trigger an action on notification </br> pause/shuffle/replay --> Service2
-
-Notification1 -- User clicked the content. </br> Open app and start Main Acitivty --> Activity2[Main Activity]
-```
 
 #### Architecture
 Built on MVVM
 > Model + View + ViewModel
-
-> ```mermaid
-> graph LR
-> Activity/Fragments --> ViewModel[ViewModel - with Livedata-]
-> ViewModel --> Repository
-> Repository --> Database
-> ```
 
 - [Android Room Library](https://developer.android.com/jetpack/androidx/releases/room)
 - [ViewModel](https://developer.android.com/topic/libraries/architecture/viewmodel)
