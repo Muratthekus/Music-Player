@@ -6,9 +6,7 @@ import android.app.PendingIntent
 import android.content.Intent
 import android.content.res.Resources
 import android.graphics.BitmapFactory
-import android.view.View
 import androidx.core.app.NotificationCompat
-import androidx.core.app.NotificationManagerCompat
 import com.malikane.mussic.Enum.PlayerAction
 import com.malikane.mussic.Enum.PlayerStatus
 import com.malikane.mussic.MainActivity
@@ -28,11 +26,14 @@ class Notification(private var activity: Activity, private var notificationManag
 		var notfAction=R.drawable.pause_black
 		//Allow to user make some action on notification button
 		val playerAction: PendingIntent?
+		val playPause:String
 
 		if(playerStatus==PlayerStatus.PLAYING){
+			playPause="pause"
 			playerAction=playerAction(PlayerAction.ACTION_PAUSE)
 		}
 		else{
+			playPause="play"
 			notfAction=R.drawable.play_button
 			playerAction=playerAction(PlayerAction.ACTION_PLAY)
 		}
@@ -45,7 +46,9 @@ class Notification(private var activity: Activity, private var notificationManag
 			.setSmallIcon(R.drawable.audiotrack_black)
 				//When user clicked to content, our app will open
 			.setContentIntent(contentIntent)
-			.addAction(notfAction,"pause",playerAction)
+			.addAction(notfAction,playPause,playerAction)
+			.addAction(R.drawable.shuffle_black,"shuffle",playerAction(PlayerAction.ACTION_SHUFFLE_PLAY))
+			.addAction(R.drawable.replay_black,"replay",playerAction(PlayerAction.ACTION_REPLAY))
 			//
 			notificationManager.notify(NOTIFICATION_ID,builder.build())
 	}
@@ -59,6 +62,10 @@ class Notification(private var activity: Activity, private var notificationManag
 			PlayerAction.ACTION_PLAY->intent.action=PlayerAction.ACTION_PLAY.action
 
 			PlayerAction.ACTION_PAUSE->intent.action=PlayerAction.ACTION_PAUSE.action
+
+			PlayerAction.ACTION_SHUFFLE_PLAY->intent.action=PlayerAction.ACTION_SHUFFLE_PLAY.action
+
+			PlayerAction.ACTION_REPLAY->intent.action=PlayerAction.ACTION_REPLAY.action
 		}
 		return PendingIntent.getBroadcast(activity.applicationContext,0,intent,0)
 	}

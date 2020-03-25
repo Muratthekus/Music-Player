@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:orientation="vertical" android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:background="@color/appBackground">
+
+
+    <androidx.appcompat.widget.AppCompatButton
+        android:layout_width="366dp"
+        android:layout_height="5dp"
+        android:layout_gravity="center"
+        android:layout_marginTop="8dp"
+        android:background="@color/white_smoke" />
+
+    <androidx.appcompat.widget.AppCompatButton
+        android:id="@+id/sharebutton"
+        android:layout_width="150dp"
+        android:layout_height="50dp"
+        android:fontFamily="@font/reem_kufi"
+        android:layout_marginTop="10dp"
+        android:layout_marginBottom="15dp"
+        android:layout_gravity="center"
+        android:background="@drawable/sharebutton"
+        android:elevation="0dp"
+        android:gravity="center"
+        android:text="Share" />
+
+</LinearLayout>

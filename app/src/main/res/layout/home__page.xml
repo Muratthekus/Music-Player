@@ -9,11 +9,10 @@
     <RelativeLayout
         android:id="@+id/container"
         android:layout_width="match_parent"
-        android:layout_height="202dp">
+        android:layout_height="163dp">
+
         <EditText
-            android:inputType="text"
             android:id="@+id/searchBar"
-            android:hint="search"
             android:layout_width="308dp"
             android:layout_height="34dp"
             android:layout_alignParentStart="true"
@@ -22,6 +21,8 @@
             android:layout_marginTop="15dp"
             android:background="@drawable/searchbar"
             android:focusableInTouchMode="true"
+            android:hint="search"
+            android:inputType="text"
             android:paddingStart="5dp" />
 
         <RelativeLayout
@@ -70,17 +71,29 @@
             android:layout_alignParentStart="true"
             android:clickable="false" />
 
-        <Button
-            android:id="@+id/play"
-            android:layout_width="39dp"
-            android:layout_height="wrap_content"
+        <TextView
+            android:id="@+id/musicName"
+            android:layout_width="wrap_content"
+            android:layout_height="41dp"
             android:layout_alignParentStart="true"
             android:layout_alignParentEnd="true"
-            android:layout_marginStart="184dp"
-            android:layout_marginTop="12dp"
-            android:visibility="visible"
-            android:layout_marginEnd="187dp"
-            android:layout_marginBottom="8dp"
+            android:layout_alignParentBottom="true"
+            android:layout_marginStart="19dp"
+            android:layout_marginEnd="148dp"
+            android:layout_marginBottom="17dp"
+            android:fontFamily="@font/reem_kufi"
+            android:text="Music Name"
+            android:textColor="@color/white"
+            android:textSize="17sp" />
+
+        <androidx.appcompat.widget.AppCompatButton
+            android:id="@+id/play_button"
+            android:layout_width="53dp"
+            android:layout_height="wrap_content"
+            android:layout_alignParentEnd="true"
+            android:layout_alignParentBottom="true"
+            android:layout_marginEnd="64dp"
+            android:layout_marginBottom="12dp"
             android:background="@drawable/play_button" />
 
         <RelativeLayout

@@ -5,6 +5,7 @@ import android.app.NotificationManager
 import android.app.Service
 import android.content.Context
 import android.content.Intent
+import android.content.SharedPreferences
 import android.media.AudioAttributes
 import android.media.AudioManager
 import android.media.MediaPlayer
@@ -12,10 +13,14 @@ import android.net.Uri
 import android.os.IBinder
 import android.os.Binder
 import android.os.Environment
+import android.preference.PreferenceManager
 import android.util.Log
+import com.malikane.mussic.Database.Music
 import com.malikane.mussic.Enum.PlayerStatus
 import com.malikane.mussic.Notification.Notification
 import com.malikane.mussic.State.State
+import java.util.*
+import kotlin.collections.ArrayList
 
 class AudioPlayerService:Service(),
 	MediaPlayer.OnErrorListener,
@@ -33,16 +38,11 @@ class AudioPlayerService:Service(),
 	private var songName:String?=""
 	var activity:Activity?=null
 
+	private var listOfMusic:List<String> = ArrayList()//Include names of music
 
 	private val iBinder:IBinder=LocalBinder()
 	//notification class instance
 	private lateinit var notification: Notification
-
-	override fun onCreate() {
-		super.onCreate()
-		//PlayerBroadCastReceiver().registerBecomingNoisy()
-		//PlayerBroadCastReceiver().registerPlayAudio()
-	}
 
 	override fun onDestroy() {
 		super.onDestroy()
@@ -51,12 +51,10 @@ class AudioPlayerService:Service(),
 			player.release()
 		}
 		notification.deleteNotification()
-		//PlayerBroadCastReceiver().unRegisterBecomingNoisy()
-		//PlayerBroadCastReceiver().unRegisterPlayAudio()
 	}
 
 	override fun onBind(intent: Intent?): IBinder? {
-		songName= intent?.extras?.getString("NAME")
+		songName = intent?.extras?.getString("NAME")
 		if(!getAudioFocus()){
 			Log.d("Media Player Error","CAN NOT GET AUDIO FOCUS")
 			stopSelf()
@@ -99,12 +97,18 @@ class AudioPlayerService:Service(),
 			player.seekTo(currPos)
 		}
 	}
+
+	//user triggered the shuffle action on the notification, we must pick a random song from 'listOfMusic'
+	fun shuffleRequest(){
+		val random = (0..listOfMusic.size).random()
+		changePath(listOfMusic[random])
+	}
 	fun changePath(name: String?){
 		this.songName=name
 		absPATH="$PATH$songName.mp3"
 		playSong()
 	}
-
+	fun setListOfMusic(musicNames:List<String>){listOfMusic=musicNames}
 	// Media Player Methods Begin
 	private fun initAudioPlayer(absPATH:String?){
 		player = MediaPlayer.create(applicationContext, Uri.parse(absPATH))
@@ -172,42 +176,6 @@ class AudioPlayerService:Service(),
 			}
 		}
 	//Media Player Methods End
-
-	/*inner class PlayerBroadCastReceiver(){
-			//Audio output were changes, player has to be stop
-			private val becomingNoisy=object: BroadcastReceiver(){
-				override fun onReceive(context: Context?, intent: Intent?) {
-					pauseSong()
-					notification.buildNotification(songName!!,PlayerStatus.STOP)
-				}
-			}
-			//
-			fun registerBecomingNoisy(){
-				val intentFilter = IntentFilter(AudioManager.ACTION_AUDIO_BECOMING_NOISY)
-				registerReceiver(becomingNoisy,intentFilter)
-			}
-			//-----------------------------------------------------------------------
-			val playAudio = object : BroadcastReceiver(){
-				override fun onReceive(context: Context?, intent: Intent?) {
-					playSong()
-					notification.buildNotification(songName!!,PlayerStatus.PLAYING)
-				}
-			}
-			fun registerPlayAudio(){
-				val intentFilter=IntentFilter(PlayerAction.ACTION_PLAY_NEW.action)
-				registerReceiver(playAudio,intentFilter)
-			}
-
-			//service gonna die, we have to remove broadcast receiver connection
-			fun unRegisterBecomingNoisy(){
-				unregisterReceiver(becomingNoisy)
-			}
-			fun unRegisterPlayAudio(){
-				unregisterReceiver(playAudio)
-			}
-
-		}
-	}*/
 
 }
 

@@ -16,14 +16,17 @@ class PlayerBroadCastReceiver:BroadcastReceiver(){
 			intent.action==PlayerAction.ACTION_PAUSE.action -> {
 				State.PLAYER!!.pauseSong()
 			}
+			intent.action==PlayerAction.ACTION_REPLAY.action -> {
+				State.PLAYER!!.playSong()
+			}
+			intent.action==PlayerAction.ACTION_SHUFFLE_PLAY.action->{
+				State.PLAYER!!.shuffleRequest()
+			}
 			intent.action==Intent.ACTION_HEADSET_PLUG -> {
 				State.PLAYER!!.pauseSong()
 			}
 			intent.action==AudioManager.ACTION_AUDIO_BECOMING_NOISY -> {
 				State.PLAYER!!.pauseSong()
-			}
-			intent.action==PlayerAction.ACTION_PLAY_NEW.action -> {
-				State.PLAYER!!.changePath(intent.getStringExtra("NAME"))
 			}
 		}
 	}
