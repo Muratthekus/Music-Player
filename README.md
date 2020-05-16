@@ -1,5 +1,5 @@
 
-# Mussic
+# Mussic - On Progress
 
 Mussic is a music player app built on MVVM android architecture.
 Mussic can play the songs that are on your device or songs on youtube
