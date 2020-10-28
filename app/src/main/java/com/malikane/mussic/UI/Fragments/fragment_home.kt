@@ -26,8 +26,7 @@ import java.io.File
 
 class Fragment_Home: Fragment(),View.OnClickListener,
 	RecylerViewAdapter.OnItemClickListener,
-	RecylerViewAdapter.OptionIconClickListener,
-	ShareBottomSheetDialog.ClickListener{
+	RecylerViewAdapter.OptionIconClickListener{
 
 	private lateinit var viewModel:MusicViewModel
 	private lateinit var shuffle: Button
@@ -128,17 +127,19 @@ class Fragment_Home: Fragment(),View.OnClickListener,
 	override fun onIconClick(music: Music) {
 		val bottomSheet = ShareBottomSheetDialog()
 		sharedMusicName = music.name
-		bottomSheet.setShareButtonClickListener(this)
+
 		bottomSheet.show(fragmentManager!!,"shareBottomSheet")
+
+		bottomSheet.onDialogShareClick = {
+			val musicPath = "${Environment.getExternalStorageDirectory().path }/Download/${ sharedMusicName }.mp3}"
+			val shareIntent = Intent(Intent.ACTION_SEND)
+			shareIntent.type = "audio/*"
+			shareIntent.putExtra(Intent.EXTRA_STREAM,Uri.parse(musicPath))
+			startActivity(Intent.createChooser(shareIntent,"Share Sound File"))
+		}
 	}
 
-	override fun onButtonClicked() {
-		val musicPATH = "${ Environment.getExternalStorageDirectory().path }/Download/${ sharedMusicName }.mp3"
-		val shareIntent = Intent(Intent.ACTION_SEND)
-		shareIntent.setType("audio/*")
-		shareIntent.putExtra(Intent.EXTRA_STREAM, Uri.parse(musicPATH))
-		startActivity(Intent.createChooser(shareIntent,"Share Sound File"))
-	}
+
 
 	override fun onClick(v: View?) {
         when(v!!.id){

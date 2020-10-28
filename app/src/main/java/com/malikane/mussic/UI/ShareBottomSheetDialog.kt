@@ -9,6 +9,8 @@ import android.widget.Button
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment
 import com.malikane.mussic.R
 
+typealias DialogShareClickListener = (() -> Unit)?
+
 class ShareBottomSheetDialog : BottomSheetDialogFragment(){
 
 	lateinit var clickListener:ClickListener
@@ -25,6 +27,9 @@ class ShareBottomSheetDialog : BottomSheetDialogFragment(){
 		}
 		return v
 	}
+
+	// Listeners
+	var onDialogShareClick: DialogShareClickListener = null
 	interface ClickListener{
 		fun onButtonClicked()
 	}
